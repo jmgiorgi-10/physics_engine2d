@@ -1,5 +1,6 @@
 #include <chrono>
 #include <cstdlib>
+#include <Eigen/Dense>
 #include <iostream>
 #include <math.h>
 #include <thread>
@@ -114,7 +115,7 @@ struct Particle {
       gravity.y = 0;
       ground1 = ground;
       if (!ground) {
-        gravity.y = -8;
+        gravity.y = -9.8;
         //vel_rot = 0.8;
       }
 	    mass = mass1;
@@ -128,9 +129,9 @@ struct Particle {
 	    Points.push_back(&point4);
 
       //vel_rot = 0.8;
-      restitution = .7;
+      restitution = .5;
 
-	    dt = .016666;
+	    dt = .033333333;
 
       //I = (1/12) * mass * (pow(width, 2) + pow(height, 2));
 
@@ -197,13 +198,7 @@ struct Particle {
       Vector2d axis2 = point3 - point2;
       axis2 = normalize(axis2);
       axis2 = leftNormal(axis2);
-      Vector2d axis3 = p2->point2 - p2->point1;
-      axis3 = normalize(axis3);
-      axis3 = leftNormal(axis3);
-      Vector2d axis4 = p2->point3 - p2->point2;
-      axis4 = normalize(axis4);
-      axis4 = leftNormal(axis4);
-      vector<Vector2d> Axes = {axis1, axis2, axis3, axis4};
+      vector<Vector2d> Axes = {axis1, axis2};
 
       Vector2d Min1, Max1, Min2, Max2;
 
@@ -227,19 +222,7 @@ struct Particle {
           }
         }
         float min2 = 10000;
-      	float max2 = -10000;
-        for (auto point : Points) {
-        	Vector2d B = *point;
-        	float proj = B*axis;
-          if (proj > max2) {
-          	max2 = proj;
-            Max2 = B;
-          }
-          if (proj < min2) {
-          	min2 = proj;
-            Min2 = B;
-          }
-        }        
+      	float max2 = -10000;     
         // If collide, axis with smallest overlap gives normal & contact point.
         if (max1 > min2) {
           float overlap = max1 - min2;
@@ -353,16 +336,12 @@ void Collisions(vector<Particle*> Particles) {
       //   ptr2->gravity.y = 0;
       // }
 
-      if (!ptr->ground1) {
-        ptr->gravity.y = -.1;
-      }
-
       if (ptr->CollisionCheck2(ptr2)) {
         //while (ptr->CollisionCheck2(ptr2)) {
         
        
         // Step backwards one integration step.
-        //ptr->StepBack(step);
+       // ptr->StepBack(step);
         //ptr2->StepBack(step);
         // Divide new integration step by 2, and go forward that amount
         //new_step = new_step / 2;
@@ -373,16 +352,10 @@ void Collisions(vector<Particle*> Particles) {
         ptr->CollisionResponse(ptr2);
         //ptr->Step(step - new_step);
         //ptr2->Step(step - new_step);
-        if (ptr->ground1) {
-          ptr2->gravity.y = 0;
-        } else if (ptr2->ground1) {
-          ptr->gravity.y = 0;
-        }
-
 
         
 
-      }
+      //}
 
 
 
@@ -439,11 +412,11 @@ int main(int argc, char **argv) {
 	Particle p1(2, 2, 1, position1, velocity1, 0, false, 5);
 	Particle p2(2, 2, 1, position2, velocity2, 1, false, 5);
   Particle p3(3, 2, 1, RandomPosition(), velocity2, 1, false, 6);
-  Particle p4(6, 2, 1, RandomPosition(), velocity2, 0, false, 6);
+  Particle p4(3, 2, 1, RandomPosition(), velocity2, 0, false, 6);
   Particle p5(3, 2, 1, RandomPosition(), velocity2, 0, false, 6);
-  Particle p6(6, 2, 1, RandomPosition(), velocity2, 1, false, 6);
+  Particle p6(3, 2, 1, RandomPosition(), velocity2, 1, false, 6);
   Particle p7(3, 2, 1, RandomPosition(), velocity2, 1, false, 6);
-  Particle p8(6, 2, 1, RandomPosition(), velocity2, 1, false, 6);
+  Particle p8(3, 2, 1, RandomPosition(), velocity2, 1, false, 6);
   Particle p9(3, 2, 1, RandomPosition(), velocity2, 1, false, 6);
   Particle p10(64, 3, 100000, position3, velocity1, 0, true, 100000);
 	
@@ -473,7 +446,7 @@ int main(int argc, char **argv) {
 
     //Update Step at specified frequency.
     //cout << currentTime - lastTime << '\n';
-		if (currentTime - lastTime > 16.6) { // 33.3 ms period -> 30 Hz loop. 
+		if (currentTime - lastTime > 33.33) { // 33.3 ms period -> 30 Hz loop. 
 
 
        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
@@ -494,7 +467,7 @@ int main(int argc, char **argv) {
 
 	    for (int i = 0; i < Particles.size(); i++) {
 	    	p = Particles.at(i);
-	    	p->Step(.01666);
+	    	p->Step(.03333333);
         // ALL Particles take step forward.
 	    }  
         Collisions(Particles);  // Check ALL possible collisions, adjusting positions & velocities.
